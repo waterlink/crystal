@@ -2,10 +2,12 @@ require "spec"
 require "yaml"
 require "compiler/crystal/tools/init"
 
-def describe_file(name)
-  describe name do
+macro describe_file(name)
+  describe {{name}} do
+    let(:contents) { File.read("tmp/#{ {{name}} }") }
+
     it "has proper contents" do
-      yield(File.read("tmp/#{name}"))
+      {{ yield }}
     end
   end
 end
@@ -24,44 +26,44 @@ module Crystal
     run_init_project("lib", "example", "tmp/example", "John Smith")
     run_init_project("app", "example_app", "tmp/example_app", "John Smith")
 
-    describe_file "example/.gitignore" do |gitignore|
-      gitignore.should contain("/.deps/")
-      gitignore.should contain("/.deps.lock")
-      gitignore.should contain("/libs/")
-      gitignore.should contain("/.crystal/")
+    describe_file "example/.gitignore" do
+      contents.should contain("/.deps/")
+      contents.should contain("/.deps.lock")
+      contents.should contain("/libs/")
+      contents.should contain("/.crystal/")
     end
 
-    describe_file "example_app/.gitignore" do |gitignore|
-      gitignore.should contain("/.deps/")
-      gitignore.should_not contain("/.deps.lock")
-      gitignore.should contain("/libs/")
-      gitignore.should contain("/.crystal/")
+    describe_file "example_app/.gitignore" do
+      contents.should contain("/.deps/")
+      contents.should_not contain("/.deps.lock")
+      contents.should contain("/libs/")
+      contents.should contain("/.crystal/")
     end
 
-    describe_file "example/LICENSE" do |license|
-      license.should match %r{Copyright \(c\) \d+ John Smith}
+    describe_file "example/LICENSE" do
+      contents.should match %r{Copyright \(c\) \d+ John Smith}
     end
 
-    describe_file "example/README.md" do |readme|
-      readme.should contain("# example")
+    describe_file "example/README.md" do
+      contents.should contain("# example")
 
-      readme.should contain(%{```crystal
+      contents.should contain(%{```crystal
 deps do
   github "[your-github-name]/example"
 end
 ```})
 
-      readme.should contain(%{require "example"})
-      readme.should contain(%{1. Fork it ( https://github.com/[your-github-name]/example/fork )})
-      readme.should contain(%{[your-github-name](https://github.com/[your-github-name]) John Smith - creator, maintainer})
+      contents.should contain(%{require "example"})
+      contents.should contain(%{1. Fork it ( https://github.com/[your-github-name]/example/fork )})
+      contents.should contain(%{[your-github-name](https://github.com/[your-github-name]) John Smith - creator, maintainer})
     end
 
-    describe_file "example/Projectfile" do |projectfile|
-      projectfile.should eq(%{deps do\nend\n})
+    describe_file "example/Projectfile" do
+      contents.should eq(%{deps do\nend\n})
     end
 
-    describe_file "example/.travis.yml" do |travis|
-      parsed = YAML.load(travis) as Hash
+    describe_file "example/.travis.yml" do
+      parsed = YAML.load(contents) as Hash
 
       parsed["language"].should eq("c")
 
@@ -77,8 +79,8 @@ end
       parsed["script"].should eq(["crystal spec"])
     end
 
-    describe_file "example/src/example.cr" do |example|
-      example.should eq(%{require "./example/*"
+    describe_file "example/src/example.cr" do
+      contents.should eq(%{require "./example/*"
 
 module Example
   # TODO Put your code here
@@ -86,21 +88,21 @@ end
 })
     end
 
-    describe_file "example/src/example/version.cr" do |version|
-      version.should eq(%{module Example
+    describe_file "example/src/example/version.cr" do
+      contents.should eq(%{module Example
   VERSION = "0.0.1"
 end
 })
     end
 
-    describe_file "example/spec/spec_helper.cr" do |example|
-      example.should eq(%{require "spec"
+    describe_file "example/spec/spec_helper.cr" do
+      contents.should eq(%{require "spec"
 require "../src/example"
 })
     end
 
-    describe_file "example/spec/example_spec.cr" do |example|
-      example.should eq(%{require "./spec_helper"
+    describe_file "example/spec/example_spec.cr" do
+      contents.should eq(%{require "./spec_helper"
 
 describe Example do
   # TODO: Write tests

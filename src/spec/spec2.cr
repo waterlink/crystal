@@ -202,7 +202,7 @@ macro describe(description)
 
   SpecContext%context::ParentSpecContext.spec_nested_contexts << Spec2::ContextContainer(SpecContext%context).new
 
-  module Spec2
+  module ::Spec2
     @@run_lambda = -> { Spec2::ROOT_CONTEXTS.shuffle.each &.run }
   end
 end
