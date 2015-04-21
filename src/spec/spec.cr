@@ -94,37 +94,38 @@ end
 
 require "./*"
 
-def describe(description, file = __FILE__, line = __LINE__)
-  Spec::RootContext.describe(description.to_s, file, line) do |context|
-    yield
-  end
-end
+#def describe(description, file = __FILE__, line = __LINE__)
+#  Spec::RootContext.describe(description.to_s, file, line) do |context|
+#    yield
+#  end
+#end
+#
+#def context(description, file = __FILE__, line = __LINE__)
+#  describe(description.to_s, file, line) { |ctx| yield ctx }
+#end
+#
+#def it(description, file = __FILE__, line = __LINE__)
+#  return if Spec.aborted?
+#  return unless Spec.matches?(description, file, line)
+#
+#  Spec.formatter.before_example description
+#
+#  begin
+#    Spec.run_before_each_hooks
+#    yield
+#    Spec::RootContext.report(:success, description, file, line)
+#  rescue ex : Spec::AssertionFailed
+#    Spec::RootContext.report(:fail, description, file, line, ex)
+#    Spec.abort! if Spec.fail_fast?
+#  rescue ex
+#    Spec::RootContext.report(:error, description, file, line, ex)
+#    Spec.abort! if Spec.fail_fast?
+#  ensure
+#    Spec.run_after_each_hooks
+#  end
+#end
 
-def context(description, file = __FILE__, line = __LINE__)
-  describe(description.to_s, file, line) { |ctx| yield ctx }
-end
-
-def it(description, file = __FILE__, line = __LINE__)
-  return if Spec.aborted?
-  return unless Spec.matches?(description, file, line)
-
-  Spec.formatter.before_example description
-
-  begin
-    Spec.run_before_each_hooks
-    yield
-    Spec::RootContext.report(:success, description, file, line)
-  rescue ex : Spec::AssertionFailed
-    Spec::RootContext.report(:fail, description, file, line, ex)
-    Spec.abort! if Spec.fail_fast?
-  rescue ex
-    Spec::RootContext.report(:error, description, file, line, ex)
-    Spec.abort! if Spec.fail_fast?
-  ensure
-    Spec.run_after_each_hooks
-  end
-end
-
+# FIXME
 def pending(description, file = __FILE__, line = __LINE__, &block)
   return if Spec.aborted?
   return unless Spec.matches?(description, file, line)
@@ -134,12 +135,8 @@ def pending(description, file = __FILE__, line = __LINE__, &block)
   Spec::RootContext.report(:pending, description, file, line)
 end
 
-def assert(file = __FILE__, line = __LINE__)
-  it("assert", file, line) { yield }
-end
-
-def fail(msg, file = __FILE__, line = __LINE__)
-  raise Spec::AssertionFailed.new(msg, file, line)
+macro assert(file = __FILE__, line = __LINE__)
+  it("assert", {{file}}, {{line}}) { {{yield}} }
 end
 
 OptionParser.parse! do |opts|
@@ -164,10 +161,10 @@ end
 
 Signal.trap(Signal::INT) { Spec.abort! }
 
-redefine_main do |main|
-  time = Time.now
-  {{main}}
-  elapsed_time = Time.now - time
-  Spec::RootContext.print_results(elapsed_time)
-  exit 1 unless Spec::RootContext.succeeded
-end
+#redefine_main do |main|
+#  time = Time.now
+#  {{main}}
+#  elapsed_time = Time.now - time
+#  Spec::RootContext.print_results(elapsed_time)
+#  exit 1 unless Spec::RootContext.succeeded
+#end

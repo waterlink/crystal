@@ -1,9 +1,9 @@
 require "spec"
 require "markdown"
 
-private def assert_render(input, output, file = __FILE__, line = __LINE__)
-  it "renders #{input.inspect}", file, line do
-    Markdown.to_html(input).should eq(output)
+macro assert_render(input, output, file = __FILE__, line = __LINE__)
+  it "renders #\{{{input}}.inspect}", {{file}}, {{line}} do
+    Markdown.to_html({{input}}).should eq({{output}})
   end
 end
 

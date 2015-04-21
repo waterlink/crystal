@@ -1,60 +1,60 @@
 require "../../spec_helper"
 
 describe "Codegen: special vars" do
-  ["$~", "$?"].each do |name|
-    it "codegens #{name}" do
+  {% for name in ["$~", "$?"] %}
+    it "codegens {{name.id}}" do
       run(%(
         class Object; def not_nil!; self; end; end
 
         def foo(z)
-          #{name} = "hey"
+          {{name.id}} = "hey"
         end
 
         foo(2)
-        #{name}
+        {{name.id}}
         )).to_string.should eq("hey")
     end
 
-    it "codegens #{name} with nilable (1)" do
+    it "codegens {{name.id}} with nilable (1)" do
       run(%(
         require "prelude"
 
         def foo
           if 1 == 2
-            #{name} = "foo"
+            {{name.id}} = "foo"
           end
         end
 
         foo
 
         begin
-          #{name}
+          {{name.id}}
         rescue ex
           "ouch"
         end
         )).to_string.should eq("ouch")
     end
 
-    it "codegens #{name} with nilable (2)" do
+    it "codegens {{name.id}} with nilable (2)" do
       run(%(
         require "prelude"
 
         def foo
           if 1 == 1
-            #{name} = "foo"
+            {{name.id}} = "foo"
           end
         end
 
         foo
 
         begin
-          #{name}
+          {{name.id}}
         rescue ex
           "ouch"
         end
         )).to_string.should eq("foo")
     end
-  end
+  {% end %}
 
   it "codegens $~ two levels" do
     run(%(

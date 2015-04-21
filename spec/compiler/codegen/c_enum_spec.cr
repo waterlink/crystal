@@ -2,6 +2,20 @@ require "../../spec_helper"
 
 CodeGenCEnumString = "lib LibFoo; enum Bar; X, Y, Z = 10, W; end end"
 
+macro assert_codegens(input, output, file = __FILE__, line = __LINE__)
+  it "codegens enum with #{ {{input}} } ", {{file}}, {{line}} do
+    run("
+      lib LibFoo
+        enum Bar
+          X = #{ {{input}} }
+        end
+      end
+
+      LibFoo::Bar::X
+    ").to_i.should eq({{output}})
+  end
+end
+
 describe "Code gen: c enum" do
   it "codegens enum value" do
     run("#{CodeGenCEnumString}; LibFoo::Bar::X").to_i.should eq(0)
@@ -19,30 +33,16 @@ describe "Code gen: c enum" do
     run("#{CodeGenCEnumString}; LibFoo::Bar::W").to_i.should eq(11)
   end
 
-  [
-    {"1 + 2", 3},
-    {"3 - 2", 1},
-    {"3 * 2", 6},
-    {"10 / 2", 5},
-    {"1 << 3", 8},
-    {"100 >> 3", 12},
-    {"10 & 3", 2},
-    {"10 | 3", 11},
-    {"(1 + 2) * 3", 9},
-    {"10 % 3", 1},
-  ].each do |test_case|
-    it "codegens enum with #{test_case[0]} " do
-      run("
-        lib LibFoo
-          enum Bar
-            X = #{test_case[0]}
-          end
-        end
-
-        LibFoo::Bar::X
-        ").to_i.should eq(test_case[1])
-    end
-  end
+  assert_codegens("1 + 2", 3)
+  assert_codegens("3 - 2", 1)
+  assert_codegens("3 * 2", 6)
+  assert_codegens("10 / 2", 5)
+  assert_codegens("1 << 3", 8)
+  assert_codegens("100 >> 3", 12)
+  assert_codegens("10 & 3", 2)
+  assert_codegens("10 | 3", 11)
+  assert_codegens("(1 + 2) * 3", 9)
+  assert_codegens("10 % 3", 1)
 
   it "codegens enum that refers to another enum constant" do
     run("
